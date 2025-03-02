@@ -2,6 +2,8 @@
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Laudis\Neo4j\Databags\Statement;
+
 
 // Endpoint para registrar que un usuario ha dado "like" a un producto
 $app->post($prefix . '/users/{id}/likes/{productId}', function (RequestInterface $request, ResponseInterface $response, array $args) use ($client) {
@@ -9,7 +11,8 @@ $app->post($prefix . '/users/{id}/likes/{productId}', function (RequestInterface
     $productId = $args['productId'];
 
     // Verificar si el usuario existe
-    $result = $client->run('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $statement = new Statement('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -18,7 +21,8 @@ $app->post($prefix . '/users/{id}/likes/{productId}', function (RequestInterface
     }
 
     // Verificar si el producto existe
-    $result = $client->run('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $statement = new Statement('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -27,7 +31,7 @@ $app->post($prefix . '/users/{id}/likes/{productId}', function (RequestInterface
     }
 
     // Crear una relación de LIKES entre el usuario y el producto
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (u:User), (p:Product) WHERE id(u) = $userId AND id(p) = $productId 
          CREATE (u)-[r:LIKES]->(p) 
          RETURN r',
@@ -36,6 +40,7 @@ $app->post($prefix . '/users/{id}/likes/{productId}', function (RequestInterface
             'productId' => (int)$productId
         ]
     );
+    $result = $client->runStatement($statement);
 
     // Verificar si la relación se creó correctamente
     if ($result->count() === 0) {
@@ -58,7 +63,8 @@ $app->post($prefix . '/users/{id}/purchases/{productId}', function (RequestInter
     $productId = $args['productId'];
 
     // Verificar si el usuario existe
-    $result = $client->run('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $statement = new Statement('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -67,7 +73,8 @@ $app->post($prefix . '/users/{id}/purchases/{productId}', function (RequestInter
     }
 
     // Verificar si el producto existe
-    $result = $client->run('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $statement = new Statement('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -76,7 +83,7 @@ $app->post($prefix . '/users/{id}/purchases/{productId}', function (RequestInter
     }
 
     // Crear una relación de PURCHASED entre el usuario y el producto
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (u:User), (p:Product) WHERE id(u) = $userId AND id(p) = $productId 
          CREATE (u)-[r:PURCHASED]->(p) 
          RETURN r',
@@ -85,6 +92,7 @@ $app->post($prefix . '/users/{id}/purchases/{productId}', function (RequestInter
             'productId' => (int)$productId
         ]
     );
+    $result = $client->runStatement($statement);
 
     // Verificar si la relación se creó correctamente
     if ($result->count() === 0) {
@@ -106,7 +114,8 @@ $app->get($prefix . '/users/{id}/interactions', function (RequestInterface $requ
     $userId = $args['id'];
 
     // Verificar si el usuario existe
-    $result = $client->run('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $statement = new Statement('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -115,11 +124,12 @@ $app->get($prefix . '/users/{id}/interactions', function (RequestInterface $requ
     }
 
     // Obtener productos con los que el usuario ha interactuado
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (u:User)-[r]->(p:Product) WHERE id(u) = $userId 
          RETURN p, type(r) as interactionType',
         ['userId' => (int)$userId]
     );
+    $result = $client->runStatement($statement);
 
     // Preparar la lista de interacciones
     $interactions = [];

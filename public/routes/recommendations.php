@@ -2,13 +2,15 @@
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Laudis\Neo4j\Databags\Statement;
 
 // Endpoint para obtener recomendaciones de productos basadas en compras y "likes" de usuarios con intereses similares
 $app->get($prefix . '/users/{id}/recommendations', function (RequestInterface $request, ResponseInterface $response, array $args) use ($client) {
     $userId = $args['id'];
 
     // Verificar si el usuario existe
-    $result = $client->run('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $statement = new Statement('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -17,12 +19,13 @@ $app->get($prefix . '/users/{id}/recommendations', function (RequestInterface $r
     }
 
     // Obtener recomendaciones de productos basadas en compras y "likes" de usuarios con intereses similares
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (u:User)-[:LIKES|PURCHASED]->(p:Product)<-[:LIKES|PURCHASED]-(other:User)-[:LIKES|PURCHASED]->(rec:Product)
          WHERE id(u) = $userId AND NOT (u)-[:LIKES|PURCHASED]->(rec)
          RETURN DISTINCT rec',
         ['userId' => (int)$userId]
     );
+    $result = $client->runStatement($statement);
 
     // Preparar la lista de recomendaciones
     $recommendations = [];
@@ -49,7 +52,8 @@ $app->get($prefix . '/users/{id}/friends-recommendations', function (RequestInte
     $userId = $args['id'];
 
     // Verificar si el usuario existe
-    $result = $client->run('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $statement = new Statement('MATCH (u:User) WHERE id(u) = $userId RETURN u', ['userId' => (int)$userId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -58,12 +62,13 @@ $app->get($prefix . '/users/{id}/friends-recommendations', function (RequestInte
     }
 
     // Obtener recomendaciones de productos basadas en compras y "likes" de amigos del usuario
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (u:User)-[:FOLLOWS]->(friend:User)-[:LIKES|PURCHASED]->(rec:Product)
          WHERE id(u) = $userId AND NOT (u)-[:LIKES|PURCHASED]->(rec)
          RETURN DISTINCT rec',
         ['userId' => (int)$userId]
     );
+    $result = $client->runStatement($statement);
 
     // Preparar la lista de recomendaciones
     $recommendations = [];
@@ -90,7 +95,8 @@ $app->get($prefix . '/products/{id}/related', function (RequestInterface $reques
     $productId = $args['id'];
 
     // Verificar si el producto existe
-    $result = $client->run('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $statement = new Statement('MATCH (p:Product) WHERE id(p) = $productId RETURN p', ['productId' => (int)$productId]);
+    $result = $client->runStatement($statement);
     if ($result->count() === 0) {
         return createJsonResponse($response->withStatus(404), [
             'status' => 404,
@@ -99,12 +105,13 @@ $app->get($prefix . '/products/{id}/related', function (RequestInterface $reques
     }
 
     // Obtener productos relacionados basados en patrones de compra y likes
-    $result = $client->run(
+    $statement = new Statement(
         'MATCH (p:Product)<-[:LIKES|PURCHASED]-(u:User)-[:LIKES|PURCHASED]->(related:Product)
          WHERE id(p) = $productId AND id(related) <> $productId
          RETURN DISTINCT related',
         ['productId' => (int)$productId]
     );
+    $result = $client->runStatement($statement);
 
     // Preparar la lista de productos relacionados
     $relatedProducts = [];

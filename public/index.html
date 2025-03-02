@@ -12,7 +12,9 @@
 
   <body>
     <div class="container">
-      <h1>API REST para gestión de productos, categorías y valoraciones</h1>
+      <h1>
+        API REST para gestión de recomendaciones con Slim Framework y Neo4j
+      </h1>
       <table class="table">
         <thead>
           <tr>
@@ -22,6 +24,66 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Endpoints de usuarios -->
+          <tr>
+            <th colspan="3">Usuarios</th>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td><code>/api/users</code></td>
+            <td>Crear un nuevo usuario</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td><code>/api/users</code></td>
+            <td>Obtener todos los usuarios</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td><code>/api/users/{id}</code></td>
+            <td>Obtener un usuario específico por ID</td>
+          </tr>
+          <tr>
+            <td>PUT</td>
+            <td><code>/api/users/{id}</code></td>
+            <td>Actualizar un usuario existente por ID</td>
+          </tr>
+          <tr>
+            <td>DELETE</td>
+            <td><code>/api/users/{id}</code></td>
+            <td>Eliminar un usuario existente por ID</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td><code>/api/users/{id}/followers</code></td>
+            <td>Obtener los seguidores de un usuario</td>
+          </tr>
+
+          <!-- Endpoints de interacciones -->
+          <tr>
+            <th colspan="3">Interacciones</th>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td><code>/api/users/{id}/follows/{followedId}</code></td>
+            <td>Registrar que un usuario sigue a otro</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td><code>/api/users/{id}/likes/{productId}</code></td>
+            <td>Registrar que un usuario ha dado "like" a un producto</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td><code>/api/users/{id}/purchases/{productId}</code></td>
+            <td>Registrar que un usuario ha comprado un producto</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td><code>/api/users/{id}/interactions</code></td>
+            <td>Obtener productos con los que un usuario ha interactuado</td>
+          </tr>
+
           <!-- Endpoints de productos -->
           <tr>
             <th colspan="3">Productos</th>
@@ -34,91 +96,61 @@
           <tr>
             <td>GET</td>
             <td><code>/api/products</code></td>
-            <td>
-              Obtener todos los productos. Parámetros opcionales de filtrado:
-              <code>categoryId</code> y <code>name</code>
-            </td>
+            <td>Obtener todos los productos</td>
           </tr>
           <tr>
             <td>GET</td>
             <td><code>/api/products/{id}</code></td>
-            <td>Obtener un producto por ID</td>
+            <td>Obtener un producto específico por ID</td>
           </tr>
           <tr>
             <td>PUT</td>
             <td><code>/api/products/{id}</code></td>
             <td>Actualizar un producto por ID</td>
           </tr>
-          <tr>
-            <td>DELETE</td>
-            <td><code>/api/products/{id}</code></td>
-            <td>Eliminar un producto por ID</td>
-          </tr>
 
-          <!-- Endpoints de categorías -->
+          <!-- Endpoints de recomendaciones -->
           <tr>
-            <th colspan="3">Categorías</th>
-          </tr>
-          <tr>
-            <td>POST</td>
-            <td><code>/api/categories</code></td>
-            <td>Crear una nueva categoría</td>
+            <th colspan="3">Recomendaciones</th>
           </tr>
           <tr>
             <td>GET</td>
-            <td><code>/api/categories</code></td>
-            <td>Obtener todas las categorías</td>
-          </tr>
-          <tr>
-            <td>GET</td>
-            <td><code>/api/categories/tree</code></td>
-            <td>Obtener la jerarquía completa de categorías</td>
-          </tr>
-          <tr>
-            <td>GET</td>
-            <td><code>/api/categories/{id}</code></td>
-            <td>Obtener una categoría por ID</td>
-          </tr>
-          <tr>
-            <td>PUT</td>
-            <td><code>/api/categories/{id}</code></td>
-            <td>Actualizar una categoría por ID</td>
-          </tr>
-          <tr>
-            <td>DELETE</td>
-            <td><code>/api/categories/{id}</code></td>
-            <td>Eliminar una categoría por ID</td>
-          </tr>
-
-          <!-- Endpoints de comentarios -->
-          <tr>
-            <th colspan="3">Comentarios</th>
-          </tr>
-          <tr>
-            <td>POST</td>
-            <td><code>/api/reviews</code></td>
-            <td>Añadir un comentario a un producto</td>
-          </tr>
-          <tr>
-            <td>GET</td>
-            <td><code>/api/reviews</code></td>
+            <td><code>/api/users/{id}/recommendations</code></td>
             <td>
-              Obtener todos los comentarios. Parámetros opcionales de filtrado:
-              <code>productId</code> y <code>userId</code>
+              Obtener recomendaciones de productos basadas en compras y "likes"
+              de usuarios con intereses similares
             </td>
           </tr>
           <tr>
-            <td>PUT</td>
-            <td><code>/api/reviews/{id}</code></td>
-            <td>Actualizar un comentario (solo por el usuario que lo creó)</td>
+            <td>GET</td>
+            <td><code>/api/users/{id}/friends-recommendations</code></td>
+            <td>
+              Obtener productos recomendados en función de lo que han
+              comprado/valorado amigos del usuario
+            </td>
           </tr>
           <tr>
-            <td>DELETE</td>
-            <td><code>/api/reviews/{id}</code></td>
-            <td>Eliminar un comentario (solo por el usuario que lo creó)</td>
+            <td>GET</td>
+            <td><code>/api/products/{id}/related</code></td>
+            <td>
+              Obtener productos relacionados basados en patrones de compra y
+              likes
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="container">
+      <h2>Ejemplo de JSON de un usuario</h2>
+      <pre>
+        <code> 
+        {
+            "name": "Alice Smith",
+            "email": "alicesmith@acme.com"
+        } 
+        </code>
+      </pre>
     </div>
 
     <div class="container">
@@ -126,38 +158,10 @@
       <pre>
         <code> 
         {
-            "name": "Producto 1",
-            "description": "Descripción del producto 1",
-            "price": 100,
-            "categoryId": "60c72b2f9b1d8b3a4c8b4567"
-        } 
-        </code>
-      </pre>
-    </div>
-
-    <div class="container">
-      <h2>Ejemplo de JSON de una categoría</h2>
-      <pre>
-        <code> 
-        {
-            "name": "Categoría 1",
-            "description": "Descripción de la categoría 1",
-            "parentId": "60c72b2f9b1d8b3a4c8b4567"
-        } 
-        </code>
-      </pre>
-    </div>
-
-    <div class="container">
-      <h2>Ejemplo de JSON de un comentario</h2>
-      <pre>
-        <code> 
-        {
-            "productId": "60c72b2f9b1d8b3a4c8b4567",
-            "userId": "60c72b2f9b1d8b3a4c8b4567",
-            "username": "usuario123",
-            "rating": 4.5,
-            "comment": "Muy buen producto, la batería dura bastante."
+            "name": "Smartphone XYZ",
+            "description": "Smartphone de última generación con pantalla AMOLED",
+            "price": 699.99,
+            "categoryId": "1"
         } 
         </code>
       </pre>

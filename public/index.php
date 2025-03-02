@@ -12,13 +12,17 @@ use \Laudis\Neo4j\Authentication\Authenticate;
 $app = AppFactory::create();
 
 // Conectar a Neo4j
-$auth = Authenticate::basic('neo4j', 'mypassword');
+$servername = "neo4j";
+$username = "neo4j";
+$password = "mypassword";
+$database = "recommendations";
+
+$auth = Authenticate::basic($username, $password);
 
 $client = ClientBuilder::create()
-    ->withDriver('bolt', 'bolt://neo4j:mypassword@neo4j')
-    ->withDriver('neo4j', 'neo4j://neo4j:7687', null, null, $auth)
-    ->withDriver('https', 'https://neo4j:7473')
-    ->withDefaultDriver('bolt')
+    ->withDriver('bolt', "bolt://$username:$password@$servername")
+    ->withDriver('neo4j', "neo4j://$servername:7687", $auth)
+    ->withDefaultDriver('neo4j')
     ->build();
 
 // Configurar el prefijo para las rutas de la API

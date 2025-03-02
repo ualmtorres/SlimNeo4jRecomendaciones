@@ -2,6 +2,8 @@
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Laudis\Neo4j\Databags\Statement;
+
 
 // Endpoint para crear un nuevo producto
 $app->post($prefix . '/products', function (RequestInterface $request, ResponseInterface $response) use ($client) {
@@ -21,7 +23,8 @@ $app->post($prefix . '/products', function (RequestInterface $request, ResponseI
     $categoryId = $data['categoryId'];
 
     // Crear un nuevo nodo de producto en la base de datos
-    $result = $client->run('CREATE (p:Product {name: $name, description: $description, price: $price, categoryId: $categoryId}) RETURN p', $data);
+    $statement = new Statement('CREATE (p:Product {name: $name, description: $description, price: $price, categoryId: $categoryId}) RETURN p', $data);
+    $result = $client->runStatement($statement);
 
     // Obtener el ID del nuevo producto
     $result = $result->first()->get('p')->getId();
@@ -37,7 +40,8 @@ $app->post($prefix . '/products', function (RequestInterface $request, ResponseI
 // Endpoint para obtener todos los productos
 $app->get($prefix . '/products', function (RequestInterface $request, ResponseInterface $response) use ($client) {
     // Obtener todos los nodos de productos de la base de datos
-    $result = $client->run('MATCH (p:Product) RETURN p');
+    $statement = new Statement('MATCH (p:Product) RETURN p', []);
+    $result = $client->runStatement($statement);
 
     // Preparar la lista de productos
     $products = [];
@@ -64,7 +68,8 @@ $app->get($prefix . '/products/{id}', function (RequestInterface $request, Respo
     $id = $args['id'];
 
     // Obtener el nodo de producto de la base de datos
-    $result = $client->run('MATCH (p:Product) WHERE id(p) = $id RETURN p', ['id' => (int) $id]);
+    $statement = new Statement('MATCH (p:Product) WHERE id(p) = $id RETURN p', ['id' => (int) $id]);
+    $result = $client->runStatement($statement);
 
     // Verificar si el producto existe
     if ($result->count() === 0) {
@@ -111,7 +116,8 @@ $app->put($prefix . '/products/{id}', function (RequestInterface $request, Respo
     $categoryId = $data['categoryId'];
 
     // Actualizar el nodo de producto en la base de datos
-    $result = $client->run('MATCH (p:Product) WHERE id(p) = $id SET p.name = $name, p.description = $description, p.price = $price, p.categoryId = $categoryId RETURN p', $data);
+    $statement = new Statement('MATCH (p:Product) WHERE id(p) = $id SET p.name = $name, p.description = $description, p.price = $price, p.categoryId = $categoryId RETURN p', $data);
+    $result = $client->runStatement($statement);
 
     // Verificar si el producto existe
     if ($result->count() === 0) {

@@ -1,6 +1,6 @@
-# API REST para gestión de productos, categorías y valoraciones
+# API REST para gestión de recomendaciones con Slim Framework y Neo4j
 
-Este proyecto es un despliegue de una API REST para gestionar productos, categorías y valoraciones almacenados en una base de datos MongoDB. La API REST permite crear, leer, actualizar y eliminar productos y categorías, así como añadir y leer valoraciones de los productos. Además, se pueden obtener los productos de una categoría y la jerarquía completa de categorías. La API REST está desarrollada con Slim y se despliega con Docker. El proyecto se compone de tres contenedores, uno para MongoDB, otro para Slim y otro para Nginx.
+Este proyecto es un despliegue de una API REST para gestionar recomendaciones de productos utilizando Slim Framework y Neo4j. La API REST permite a los usuarios dar "me gusta" a productos, obtener recomendaciones personalizadas y ver las interacciones de otros usuarios. La API REST está desarrollada con Slim y se despliega con Docker.
 
 ## Instalación
 
@@ -16,95 +16,88 @@ La API REST se despliega en `http://localhost:8080`. A continuación se describe
 
 ### Endpoints
 
+#### Usuarios
+
+- `POST /api/users`: Crear un nuevo usuario.
+- `GET /api/users`: Obtener todos los usuarios.
+- `GET /api/users/{id}`: Obtener un usuario específico por ID.
+- `PUT /api/users/{id}`: Actualizar un usuario existente por ID.
+- `DELETE /api/users/{id}`: Eliminar un usuario existente por ID.
+- `GET /api/users/{id}/followers`: Obtener los seguidores de un usuario.
+
+### Interacciones
+
+- `POST /api/users/{id}/follows/{followedId}`: Registrar que un usuario sigue a otro.
+- `POST /api/users/{id}/likes/{productId}`: Registrar que un usuario ha dado "like" a un producto.
+- `POST /api/users/{id}/purchases/{productId}`: Registrar que un usuario ha comprado un producto.
+- `GET /api/users/{id}/interactions`: Obtener productos con los que un usuario ha interactuado.
+
 #### Productos
 
 - `POST /api/products`: Crear un nuevo producto.
-- `GET /api/products`: Obtener todos los productos. Parámetros opcionales de filtrado: `categoryId` y `name`
-- `GET /api/products/{id}`: Obtener un producto por ID.
+- `GET /api/products`: Obtener todos los productos.
+- `GET /api/products/{id}`: Obtener un producto específico por ID.
 - `PUT /api/products/{id}`: Actualizar un producto por ID.
-- `DELETE /api/products/{id}`: Eliminar un producto por ID. También se eliminan los comentarios asociados.
 
-#### Categorías
+#### Recomendaciones
 
-- `POST /api/categories`: Crear una nueva categoría.
-- `GET /api/categories`: Obtener todas las categorías.
-- `GET /api/categories/tree`: Obtener la jerarquía completa de categorías.
-- `GET /api/categories/{id}`: Obtener una categoría por ID.
-- `PUT /api/categories/{id}`: Actualizar una categoría por ID.
-- `DELETE /api/categories/{id}`: Eliminar una categoría por ID.
+- `GET /api/users/{id}/recommendations`: Obtener recomendaciones de productos basadas en compras y "likes" de usuarios con intereses similares.
+- `GET /api/users/{id}/friends-recommendations`: Obtener productos recomendados en función de lo que han comprado/valorado amigos del usuario.
+- `GET /api/products/{id}/related`: Obtener productos relacionados basados en patrones de compra y likes.
 
-#### Comentarios
+### Ejemplo de JSON de un usuario
 
-- `POST /api/reviews`: Añadir un comentario a un producto.
-- `GET /api/reviews`: Obtener todos los comentarios. Parámetros opcionales de filtrado: `productId` y `userId`
-- `PUT /api/reviews/{id}`: Actualizar un comentario (solo por el usuario que lo creó).
-- `DELETE /api/reviews/{id}`: Eliminar un comentario por ID (solo por el usuario que lo creó).
-
+```json
+{
+    "name": "Alice Smith",
+    "email": "alicesmith@acme.com"
+}
+```
 
 ### Ejemplo de JSON de un producto
 
 ```json
 {
-    "name": "Producto 1",
-    "description": "Descripción del producto 1",
-    "price": 100,
-    "categoryId": "60c72b2f9b1d8b3a4c8b4567"
-}
-```
-
-### Ejemplo de JSON de una categoría
-
-```json
-{
-    "name": "Categoría 1",
-    "description": "Descripción de la categoría 1",
-    "parentId": "60c72b2f9b1d8b3a4c8b4567"
-}
-```
-
-### Ejemplo de JSON de un comentario
-
-```json
-{
-    "productId": "60c72b2f9b1d8b3a4c8b4567",
-    "userId": "60c72b2f9b1d8b3a4c8b4567",
-    "username": "usuario123",
-    "rating": 4.5,
-    "comment": "Muy buen producto, la batería dura bastante."
+    "name": "Smartphone XYZ",
+    "description": "Smartphone de última generación con pantalla AMOLED",
+    "price": 699.99,
+    "categoryId": "1"
 }
 ```
 
 ## Indices para rendimiento
 
-Para mejorar el rendimiento de los endpoints, es recomendable definir los siguientes índices en MongoDB:
+Para mejorar el rendimiento de los endpoints, es recomendable definir los siguientes índices en Neo4j:
 
 ### Indices para la colección de productos
 
 1. Indice en el campo `categoryId` para filtrar productos por categoría:
-   ```bash
-   db.products.createIndex({ categoryId: 1 })
+   ```cypher
+   CREATE INDEX ON :Product(categoryId)
    ```
 
 2. Indice en el campo `name` para buscar productos por nombre:
-   ```bash
-   db.products.createIndex({ name: "text" })
+   ```cypher
+   CREATE INDEX ON :Product(name)
    ```
 
-### Indices para la colección de categorías
+### Indices para la colección de usuarios
 
-1. Indice en el campo `parentId` para construir la jerarquía de categorías:
-   ```bash
-   db.categories.createIndex({ parentId: 1 })
+1. Indice en el campo `email` para buscar usuarios por email:
+   ```cypher
+   CREATE INDEX ON :User(email)
    ```
 
-### Indices para la colección de comentarios
+### Indices para la colección de interacciones
 
-1. Indice en el campo `productId` para filtrar comentarios por producto:
-   ```bash
-   db.reviews.createIndex({ productId: 1 })
+1. Indice en el campo `userId` para filtrar interacciones por usuario:
+   ```cypher
+   CREATE INDEX ON :LIKES(userId)
+   CREATE INDEX ON :PURCHASED(userId)
    ```
 
-2. Indice en el campo `userId` para filtrar comentarios por usuario:
-   ```bash
-   db.reviews.createIndex({ userId: 1 })
+2. Indice en el campo `productId` para filtrar interacciones por producto:
+   ```cypher
+   CREATE INDEX ON :LIKES(productId)
+   CREATE INDEX ON :PURCHASED(productId)
    ```
