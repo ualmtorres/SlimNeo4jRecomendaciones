@@ -1,0 +1,58 @@
+////
+NO CAMBIAR!!
+Codificación, idioma, tabla de contenidos, tipo de documento
+////
+:encoding: utf-8
+:lang: es
+:toc: right
+:toc-title: Tabla de contenidos
+:doctype: book
+:icons: font
+:source-highlighter: highlight.js
+:copycss: true
+:linkattrs:
+
+////
+Nombre y título del trabajo
+////
+# Desarrollo de una API REST para API REST para un motor de recomendaciones con Slim Framework y Neo4j
+Bases de datos a gran escala. Máster en Ingeniería Informática. Manuel Torres <mtorres@ual.es>
+
+image::images/di.png[]
+
+// NO CAMBIAR!! (Entrar en modo no numerado de apartados)
+:numbered!: 
+
+[abstract]
+== Resumen
+////
+COLOCA A CONTINUACION EL RESUMEN
+////
+
+
+////
+COLOCA A CONTINUACION LOS OBJETIVOS
+////
+.Objetivos
+
+
+[TIP]
+====
+Disponible el [repositorio de GitHub] con el código fuente de la API REST.
+====
+
+:numbered:
+
+## Introducción
+
+Neo4j: API REST para un Motor de Recomendaciones
+Descripción general:
+Las relaciones entre usuarios, productos y otras entidades (como categorías o reseñas) pueden modelarse de forma natural mediante grafos. Neo4j es especialmente potente para consultas que implican conexiones y patrones de relación, lo que lo hace ideal para desarrollar sistemas de recomendaciones.
+
+Actividad propuesta:
+
+Objetivo: Crear una API REST que genere recomendaciones personalizadas para los usuarios basándose en sus interacciones, compras y relaciones con otros productos o usuarios.
+Aspectos a destacar:
+Modelado de la información en forma de grafo (nodos para usuarios, productos, categorías; relaciones que indiquen compras, “me gusta” o afinidades).
+Utilización de algoritmos de grafos (por ejemplo, rutas cortas o similitud de vecinos) para sugerir productos relacionados.
+Implementación de consultas que exploten al máximo el potencial de las relaciones en Neo4j.
